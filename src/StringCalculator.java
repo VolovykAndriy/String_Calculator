@@ -4,82 +4,63 @@ class StringCalculator {
 
     public static boolean isNumeric(String str) {
         try {
-            Double.parseDouble(str);
+            Integer.parseInt(str);
             return true;
-        } catch(NumberFormatException e){
+        } catch (NumberFormatException e) {
             return false;
         }
     }
-    int add(String input) {
+
+    static int add(String numbers) {
         List<String> delimiters = new ArrayList<>();
-        String[] del_temp = {",", "\n"};
 
-        delimiters.add(del_temp[0]);
-        delimiters.add(del_temp[1]);
+        delimiters.add(",");
+        delimiters.add("\\n");
 
-        if (Objects.equals(input, "")) return 0;
-
-        else if (input.startsWith("//")) {
-            if (Objects.equals("[", input.substring(2,3))) {
-                for (int i = 0; i < input.length()-2; i++) {
-                    if (Objects.equals(input.substring(i, i+3), "]\\n")) {
-                        del_temp = input.substring(3, i).split("]\\Q[");
-                        Collections.addAll(delimiters, del_temp);
-                        input = input.substring(i+3);
-                    }
-                }
-            }
-            else {
-                for (int i = 0; i < input.length()-1; i++) {
-                    if (Objects.equals(input.substring(i, i+2), "\\n")) {
-                        delimiters.add(input.substring(2, i));
-                        input = input.substring(i+2);
-                    }
-                }
+        if (numbers.isEmpty()) return 0;
+        else if (numbers.startsWith("//")) {
+            if (Objects.equals('[', numbers.charAt(2))) {
+                Collections.addAll(delimiters, numbers.substring(3, numbers.indexOf("]\\n")).split("]\\Q["));
+                numbers = numbers.substring(numbers.indexOf("]\\n") + 3);
+            } else {
+                delimiters.add((numbers.substring(2, numbers.indexOf("\\n"))));
+                numbers = numbers.substring(numbers.indexOf("\\n") + 2);
             }
             Collections.sort(delimiters);
             Collections.reverse(delimiters);
         }
 
-//        System.out.println("delimiters: " + delimiters); //выпилить
-        System.out.println(input); //выпилить
-
-
         for (String delimiter : delimiters) {
-            input = input.replaceAll("\\Q" + delimiter + "\\E", "*");
+            numbers = numbers.replaceAll("\\Q" + delimiter + "\\E", ",");
         }
 
-        if (input.contains("**")) throw new IllegalArgumentException("Two delimiters in a row");
+        if (numbers.contains(",,")) throw new IllegalArgumentException("Two or more delimiters together");
 
         int result = 0;
-        String[] nums = input.split("\\Q*");
-        List<String> negative_nums = new ArrayList<>();
+        String[] numbersList = numbers.split(",");
+        List<String> negativeNums = new ArrayList<>();
 
-        for (String num : nums) {
+        for (String num : numbersList) {
             if (isNumeric(num)) {
-                if (Integer.parseInt(num) < 0) negative_nums.add(num);
+                if (Integer.parseInt(num) < 0) negativeNums.add(num);
                 else if (Integer.parseInt(num) <= 1000) result += Integer.parseInt(num);
-            } else throw new IllegalArgumentException("Wrong delimiter");
+            } else throw new IllegalArgumentException("Not allowed delimiter");
         }
 
-        if (negative_nums.size()!=0) throw new IllegalArgumentException("negative nums: " + negative_nums);
+        if (negativeNums.size() != 0) {
+            throw new IllegalArgumentException("Negative numbers: " + negativeNums);
+        }
 
         return result;
-
-        //          //[++][+]\n1++2+3
-        //          //[{}][{123}][\n123]\n123,2{}123\n1233{123}123
-
     }
 }
 
 
-
 class Main {
     public static void main(String[] args) {
-        System.out.print("Enter string: "); //выпилить
+        System.out.print("Enter string: ");
         Scanner read = new Scanner(System.in);
-        String str = read.nextLine();
-        StringCalculator calc = new StringCalculator();
-        System.out.println(calc.add(str));
+        String inputNumbers = read.nextLine();
+        System.out.println(StringCalculator.add(inputNumbers));
     }
 }
